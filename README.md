@@ -55,3 +55,7 @@ Goodfellow et al. (2014) introduce generative adversarial networks (GANs), a fra
 Hinton & Salakhutdinov (2006) demonstrate how neural networks can reduce data dimensionality, foundational for understanding autoencoders.
 
 Vincent et al. (2008) present denoising autoencoders, showing how they can learn robust data representations, directly applicable to this project's objectives.
+
+##### Future Improvements:
+
+In the future, some areas of improvement include switching to 1-Dimensional Unet Models (Accomplished) 2-Dimensional Unet Models (These are helpful for preserving frequency information), Perceptual Loss funcitons, Set up pipeline for realtime noise cancellation, this is practical and works on anything with a dedicated device for matmul computations like GPUs or NPUs.

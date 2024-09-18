@@ -8,7 +8,7 @@ import os
 import numpy as np
 
 # Device configuration
-device = torch.device('mps' if torch.backends.mps.is_available() else 'cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
 print(f'Using device: {device}')
 
 # Paths to the dataset directories
@@ -106,7 +106,7 @@ def combined_loss(y_pred, y_true):
     loss_time = nn.L1Loss()(y_pred, y_true)
     loss_freq = stft_loss(y_pred, y_true)
     return loss_time + loss_freq
-optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=3)
 
 # Training loop
