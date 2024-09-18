@@ -1,0 +1,6 @@
+numpy
+sounddevice
+librosa
+torch
+torchvision
+torchaudio
