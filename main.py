@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import sounddevice as sd
-from models.autoencoder import DenoisingAutoencoder
+from models.autoencoder import UNet1D
 from utils.audio_utils import chunk_generator
 import librosa
 
@@ -10,7 +10,7 @@ device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
 print(f'Using device: {device}')
 
 # Load or initialize the model
-model = DenoisingAutoencoder().to(device)
+model = UNet1D().to(device)
 model.eval()  # Set model to evaluation mode
 
 # Optionally, load pre-trained weights

@@ -1,14 +1,14 @@
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-from models.autoencoder import ConvDenoisingAutoencoder
+from models.autoencoder import ConvDenoisingAutoencoder, UNet1D
 import librosa
 import glob
 import os
 import numpy as np
 
 # Device configuration
-device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
+device = torch.device('mps' if torch.backends.mps.is_available() else 'cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
 
 # Paths to the dataset directories
@@ -92,30 +92,46 @@ test_dataset = AudioDataset(paired_noisy_test_files, paired_clean_test_files)
 test_dataloader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
 # Initialize model, loss, optimizer
-model = ConvDenoisingAutoencoder().to(device)
+model = UNet1D().to(device)
 criterion = nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+n_fft = 1024  # Or your chosen n_fft value
+window = torch.hann_window(n_fft).to(device)
+def stft_loss(y_pred, y_true):
+    hop_length = n_fft // 4
+    y_pred_stft = torch.stft(y_pred.squeeze(1), n_fft=n_fft, hop_length=hop_length, window=window, return_complex=True)
+    y_true_stft = torch.stft(y_true.squeeze(1), n_fft=n_fft, hop_length=hop_length, window=window, return_complex=True)
+    loss = nn.L1Loss()(torch.abs(y_pred_stft), torch.abs(y_true_stft))
+    return loss
+def combined_loss(y_pred, y_true):
+    loss_time = nn.L1Loss()(y_pred, y_true)
+    loss_freq = stft_loss(y_pred, y_true)
+    return loss_time + loss_freq
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=3)
 
 # Training loop
 num_epochs = 20
 for epoch in range(num_epochs):
     model.train()
     total_loss = 0
+    i = 0
     for noisy, clean in train_dataloader:
         noisy = noisy.to(device)
         clean = clean.to(device)
 
+        noisy = noisy.unsqueeze(1)  # Add channel dimension
+        clean = clean.unsqueeze(1)
         # Forward pass
         outputs = model(noisy)
-        loss = criterion(outputs, clean)
+        loss = combined_loss(outputs, clean)
 
         # Backward and optimize
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-
+        i+=1
         total_loss += loss.item()
-
+        print(total_loss/i)
     average_loss = total_loss / len(train_dataloader)
     print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {average_loss:.4f}')
 
@@ -126,12 +142,14 @@ for epoch in range(num_epochs):
         for noisy, clean in test_dataloader:
             noisy = noisy.to(device)
             clean = clean.to(device)
+            noisy = noisy.unsqueeze(1)  # Add channel dimension
+            clean = clean.unsqueeze(1)
             outputs = model(noisy)
-            loss = criterion(outputs, clean)
+            loss = combined_loss(outputs, clean)
             total_val_loss += loss.item()
 
     average_val_loss = total_val_loss / len(test_dataloader)
     print(f'Validation Loss: {average_val_loss:.4f}')
-
-# Save the model
-torch.save(model.state_dict(), 'model.pth')
+    scheduler.step(average_val_loss)
+    # Save the model
+    torch.save(model.state_dict(), 'model.pth')

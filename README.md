@@ -34,6 +34,7 @@ Hinton, G. E., & Salakhutdinov, R. R. (2006). Reducing the Dimensionality of Dat
 
 Vincent, P., Larochelle, H., Bengio, Y., & Manzagol, P.-A. (2008). Extracting and Composing Robust Features with Denoising Autoencoders. Proceedings of the 25th International Conference on Machine Learning, 1096-1103.
 
+#### Descriptions of papers referenced
 
 Haykin (2002) provides a comprehensive overview of adaptive filter theory, essential for understanding traditional noise cancellation techniques.
 
