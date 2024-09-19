@@ -1,18 +1,17 @@
-# Real-Time Denoising AutoEncoder Using PyTorch's MPS on Mac
+# Real-Time Denoising AutoEncoder Using PyTorch
 
 ## Introduction
 
-This project implements a real-time Denoising AutoEncoder (DAE) using PyTorch with MPS backend on Mac for GPU acceleration.
+This project implements a real-time Denoising AutoEncoder (DAE) using PyTorch with MPS backend on Mac for GPU acceleration, cuda backend for supported GPUs with a fallback on CPU.
 
 ## Setup Instructions
 
 ### Prerequisites
 
 - Python 3.8 or higher
-- macOS with MPS-compatible GPU (Apple Silicon)
+- pytorch and other ML packages described in requirements.txt
 
 ### References
-
 
 Haykin, S. (2002). Adaptive Filter Theory. Prentice Hall.
 
@@ -58,4 +57,4 @@ Vincent et al. (2008) present denoising autoencoders, showing how they can learn
 
 ##### Future Improvements:
 
-In the future, some areas of improvement include switching to 1-Dimensional Unet Models (Accomplished) 2-Dimensional Unet Models (These are helpful for preserving frequency information), Perceptual Loss funcitons, Set up pipeline for realtime noise cancellation, this is practical and works on anything with a dedicated device for matmul computations like GPUs or NPUs.
+In the future, some areas of improvement include switching to 1-Dimensional Unet Models (Accomplished and implemented) 2-Dimensional Unet Models (These are helpful for preserving frequency information), Perceptual Loss funcitons, Set up pipeline for realtime noise cancellation, this is practical and works on anything with a dedicated device for matmul computations like GPUs or NPUs.
