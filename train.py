@@ -8,7 +8,7 @@ import os
 import numpy as np
 
 # Device configuration
-device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
+device = torch.device('mps' if torch.backends.mps.is_available() else 'cuda' if torch.backends.cuda.is_available() else 'cpu')
 print(f'Using device: {device}')
 
 # Paths to the dataset directories
