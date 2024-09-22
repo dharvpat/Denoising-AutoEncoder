@@ -11,6 +11,10 @@ This project implements a real-time Denoising AutoEncoder (DAE) using PyTorch wi
 - Python 3.8 or higher
 - pytorch and other ML packages described in requirements.txt
 
+### Training and Running
+
+run `src/train.py` using python3 and infer on live data using `/main.py`
+
 ### References
 
 Haykin, S. (2002). Adaptive Filter Theory. Prentice Hall.
