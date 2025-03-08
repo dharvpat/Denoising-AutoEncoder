@@ -162,10 +162,10 @@ for epoch in range(num_epochs):
         
         warmup_epochs = 0.5 * num_epochs
 
-        current_kl_weight = get_kl_weight(epoch, warmup_epochs, max_weight=1e-3, batch = i)
+        #current_kl_weight = get_kl_weight(epoch, warmup_epochs, max_weight=1e-3, batch = i)
         recon_loss = combined_loss(recon, clean)
         kl_loss = kl_divergence(mu, logvar)
-        loss = recon_loss + current_kl_weight * kl_loss
+        loss = kl_loss * 10 + recon_loss
 
         # Backward and optimize
         optimizer.zero_grad()
@@ -174,7 +174,7 @@ for epoch in range(num_epochs):
         
         i += 1
         total_loss += loss
-        print(f'Batch {i}/{len(train_dataloader)}, KL Loss: {kl_loss}, Recon Loss: {recon_loss}, Loss: {total_loss / i:.4f}, Total Loss: {total_loss}')
+        print(f'Batch {i}/{len(train_dataloader)},Recon Loss: {recon_loss}, KL Loss: {kl_loss}, Loss: {total_loss / i:.4f}, Total Loss: {total_loss}')
         
     average_loss = total_loss / len(train_dataloader)
     print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {average_loss:.4f}')
@@ -191,12 +191,12 @@ for epoch in range(num_epochs):
             recon, mu, logvar = model(noisy)
             recon_loss = combined_loss(recon, clean)
             kl_loss = kl_divergence(mu, logvar)
-            loss = recon_loss + kl_loss * 1e-3
-            total_val_loss += loss.item()
+            loss = recon_loss + kl_loss * 10
+            total_val_loss += loss
 
     average_val_loss = total_val_loss / len(test_dataloader)
     print(f'Validation Loss: {average_val_loss:.4f}')
     scheduler.step(average_val_loss)
     
     # Save the model checkpoint
-    torch.save(model.state_dict(), 'model.pth')
+    torch.save(model.state_dict(), 'model_Hybrid_large-KL-Loss.pth')
