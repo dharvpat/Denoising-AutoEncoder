@@ -13,7 +13,7 @@ This project implements a real-time Denoising AutoEncoder (DAE) using PyTorch wi
 
 ### Training and Running
 
-run `src/train.py` using python3 and infer on existing test set data using `/infer.py`. The file name should be adjusted to the specific one you would like to test and the model name should be adjusted accordingly as well. Lower volume when playing back reconstructed audio, too loud.
+run `src/train.py` using python3 and infer on existing test set data using `/infer.py`. The file name should be adjusted to the specific one you would like to test and the model name should be adjusted accordingly as well. Lower volume when playing back reconstructed audio, too loud. Best Model is `model_Hybrid_large-KL-loss.pth`. Currently handling 5 seconds of audio input however, coding this into a stream pipeline is not difficult, the model accepts input at 16 kHz which is a widely accepted standard, and the python code to run the model on a stream of data is not too difficult. 
 
 ### References
 
