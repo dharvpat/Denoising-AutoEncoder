@@ -13,9 +13,11 @@ This project implements a real-time Denoising AutoEncoder (DAE) using PyTorch wi
 
 ### Training and Running
 
-run `src/train.py` using python3 and infer on live data using `/main.py`
+run `src/train.py` using python3 and infer on existing test set data using `/infer.py`. The file name should be adjusted to the specific one you would like to test and the model name should be adjusted accordingly as well. Lower volume when playing back reconstructed audio, too loud.
 
 ### References
+
+Prokhorov, V., Shareghi, E., Li, Y., Pilehvar, M. T., & Collier, N. (2019). On the Importance of the Kullback-Leibler Divergence Term in Variational Autoencoders for Text Generation (arXiv preprint arXiv:1909.13668).
 
 Haykin, S. (2002). Adaptive Filter Theory. Prentice Hall.
 
