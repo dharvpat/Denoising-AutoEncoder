@@ -5,6 +5,7 @@ class UNet1D(nn.Module):
     def __init__(self, num_channels=1, base_filters=64):
         super(UNet1D, self).__init__()
 
+        # Encoder
         self.enc1 = nn.Sequential(
             nn.Conv1d(num_channels, base_filters, kernel_size=15, padding=7),
             nn.BatchNorm1d(base_filters),
@@ -25,7 +26,12 @@ class UNet1D(nn.Module):
             nn.BatchNorm1d(base_filters*8),
             nn.ReLU(inplace=True)
         )
+        
+        # Layers for latent distribution
+        self.fc_mu = nn.Conv1d(base_filters*8, base_filters*8, kernel_size=1)
+        self.fc_logvar = nn.Conv1d(base_filters*8, base_filters*8, kernel_size=1)
 
+        # Decoder
         self.dec1 = nn.Sequential(
             nn.ConvTranspose1d(base_filters*8, base_filters*4, kernel_size=15, stride=2, padding=7, output_padding=1),
             nn.BatchNorm1d(base_filters*4),
@@ -44,6 +50,11 @@ class UNet1D(nn.Module):
         self.final_conv = nn.Conv1d(base_filters*2, num_channels, kernel_size=15, padding=7)
         self.tanh = nn.Tanh()
 
+    def reparameterize(self, mu, logvar):
+        std = torch.exp(0.5 * logvar)
+        eps = torch.randn_like(std)
+        return mu + std * eps
+
     def forward(self, x):
         # Encoder
         x1 = self.enc1(x)
@@ -51,8 +62,14 @@ class UNet1D(nn.Module):
         x3 = self.enc3(x2)
         x4 = self.enc4(x3)
 
-        # Decoder
-        d1 = self.dec1(x4)
+        # Compute latent distribution parameters
+        mu = self.fc_mu(x4)
+        logvar = self.fc_logvar(x4)
+        # Sample latent vector using reparameterization trick
+        z = self.reparameterize(mu, logvar)
+
+        # Decoder using the sampled latent vector z
+        d1 = self.dec1(z)
         d1 = torch.cat([d1, x3], dim=1)
 
         d2 = self.dec2(d1)
@@ -63,35 +80,4 @@ class UNet1D(nn.Module):
 
         out = self.final_conv(d3)
         out = self.tanh(out)
-        return out
-
-class ConvDenoisingAutoencoder(nn.Module):
-    def __init__(self):
-        super(ConvDenoisingAutoencoder, self).__init__()
-
-        # Encoder
-        self.encoder = nn.Sequential(
-            nn.Conv1d(1, 16, kernel_size=15, stride=2, padding=7),
-            nn.ReLU(True),
-            nn.Conv1d(16, 32, kernel_size=15, stride=2, padding=7),
-            nn.ReLU(True),
-            nn.Conv1d(32, 64, kernel_size=15, stride=2, padding=7),
-            nn.ReLU(True)
-        )
-
-        # Decoder
-        self.decoder = nn.Sequential(
-            nn.ConvTranspose1d(64, 32, kernel_size=15, stride=2, padding=7, output_padding=1),
-            nn.ReLU(True),
-            nn.ConvTranspose1d(32, 16, kernel_size=15, stride=2, padding=7, output_padding=1),
-            nn.ReLU(True),
-            nn.ConvTranspose1d(16, 1, kernel_size=15, stride=2, padding=7, output_padding=1),
-            nn.Tanh()
-        )
-
-    def forward(self, x):
-        x = x.unsqueeze(1)  # Add channel dimension
-        x = self.encoder(x)
-        x = self.decoder(x)
-        x = x.squeeze(1)  # Remove channel dimension
-        return x
+        return out, mu, logvar
