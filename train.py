@@ -6,6 +6,13 @@ import librosa
 import glob
 import os
 import numpy as np
+import torch.nn.utils.prune as prune
+
+def prune_model(model, amount=0.01):
+    for module in model.modules():
+        if isinstance(module, (nn.Conv1d, nn.ConvTranspose1d)):
+            prune.l1_unstructured(module, name="weight", amount=amount)
+    return model
 
 # Device configuration
 device = torch.device('cuda' if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu')
@@ -197,6 +204,7 @@ for epoch in range(num_epochs):
     average_val_loss = total_val_loss / len(test_dataloader)
     print(f'Validation Loss: {average_val_loss:.4f}')
     scheduler.step(average_val_loss)
+    model = prune(model, amount = 0.01)
     
     # Save the model checkpoint
     torch.save(model.state_dict(), 'model_Hybrid_large-KL-Loss.pth')
